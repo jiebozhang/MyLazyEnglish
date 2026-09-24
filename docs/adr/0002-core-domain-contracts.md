@@ -18,7 +18,7 @@ The PRD defines the cross-layer data model and local repository boundaries, whil
 
 ## Assumptions and boundaries
 
-- PRD tables mark many fields as simplified and do not enumerate values for import, subtitle, translation, AI job, or generated-content states. Those fields remain strings until their owning feature task specifies a validated state machine. Video lifecycle and vocabulary lifecycle use only states explicitly listed in the PRD/task card.
+- Status fields use sealed types with exact wire codecs and an `Unknown(raw)` case. Import status reuses only the named Video pipeline lifecycle values; subtitle availability uses the explicit no-subtitle/available conditions; translation uses the documented available/stale conditions; AI jobs recognize only queued/cancelled wording, and generated content recognizes only `READY`. Other values remain losslessly represented as Unknown. Video and vocabulary state machines remain closed because their values are explicitly enumerated.
 - `source_ref` is represented as an opaque reference, never as a filesystem path. The platform adapter owns interpretation and permission persistence.
 - Exact repository query shapes beyond the stated Profile/family scope are initial contracts and may be refined by their owning Epic without weakening scope requirements.
 

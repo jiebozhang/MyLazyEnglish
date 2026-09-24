@@ -22,6 +22,25 @@ data class Profile(
 enum class VideoSourceType { LOCAL_FILE, PLATFORM_REFERENCE }
 @JvmInline value class VideoSourceReference(val value: String)
 enum class VideoStatus { DRAFT, PROCESSING, NEEDS_SUBTITLE, FAILED, READY, ARCHIVED }
+sealed interface ImportStatus {
+    data object Draft : ImportStatus
+    data object Processing : ImportStatus
+    data object NeedsSubtitle : ImportStatus
+    data object Failed : ImportStatus
+    data object Ready : ImportStatus
+    data object Archived : ImportStatus
+    data class Unknown(val raw: String) : ImportStatus
+}
+sealed interface SubtitleStatus {
+    data object NoSubtitle : SubtitleStatus
+    data object Available : SubtitleStatus
+    data class Unknown(val raw: String) : SubtitleStatus
+}
+sealed interface TranslationStatus {
+    data object Available : TranslationStatus
+    data object Stale : TranslationStatus
+    data class Unknown(val raw: String) : TranslationStatus
+}
 data class VideoMetadata(
     val title: String,
     val coverAssetId: VideoAssetId?,
@@ -45,9 +64,9 @@ data class Video(
     val checksum: String?,
     val metadata: VideoMetadata,
     val status: VideoStatus,
-    val importStatus: String,
-    val subtitleStatus: String,
-    val translationStatus: String,
+    val importStatus: ImportStatus,
+    val subtitleStatus: SubtitleStatus,
+    val translationStatus: TranslationStatus,
     val playable: Boolean,
     val rights: VideoRights,
     val errorCode: String? = null,
@@ -160,6 +179,15 @@ data class ReviewAttempt(
     val occurredAt: Instant,
 )
 enum class AiFeature { CONTEXT_EXPLANATION, SUBTITLE_TRANSLATION, LEARNING_TEXT, ASR }
+sealed interface AiJobStatus {
+    data object Queued : AiJobStatus
+    data object Cancelled : AiJobStatus
+    data class Unknown(val raw: String) : AiJobStatus
+}
+sealed interface GeneratedContentStatus {
+    data object Ready : GeneratedContentStatus
+    data class Unknown(val raw: String) : GeneratedContentStatus
+}
 data class AiGeneratedContent(
     val id: GeneratedContentId,
     val feature: AiFeature,
@@ -168,13 +196,13 @@ data class AiGeneratedContent(
     val outputJson: String?,
     val schemaVersion: String,
     val version: String,
-    val status: String,
+    val status: GeneratedContentStatus,
     val safetyFlag: String?,
 )
 data class AiJob(
     val id: AiJobId,
     val feature: AiFeature,
-    val status: String,
+    val status: AiJobStatus,
     val progress: Float,
     val errorCode: String?,
     val usage: String?,

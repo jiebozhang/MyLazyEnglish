@@ -34,9 +34,9 @@ class DomainModelTest {
         checksum = null,
         metadata = VideoMetadata("Sample", null, null, emptyList(), null, null, null, null),
         status = status,
-        importStatus = status.name,
-        subtitleStatus = "UNKNOWN",
-        translationStatus = "UNKNOWN",
+        importStatus = ImportStatus.Unknown("UNKNOWN"),
+        subtitleStatus = SubtitleStatus.Unknown("UNKNOWN"),
+        translationStatus = TranslationStatus.Unknown("UNKNOWN"),
         playable = false,
         rights = VideoRights("FAMILY", null, null, false),
     )
