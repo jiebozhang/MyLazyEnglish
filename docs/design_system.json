@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "project_name": "LazyEng 家庭版",
+    "source_mode": "requirements",
+    "style": "教育护眼·温和亲切",
+    "target_device": "Xiaomi 15 Ultra (412×915 logical, 6.73\")"
+  },
+  "colors": {
+    "primary": "#34D399",
+    "primary_foreground": "#FFFFFF",
+    "accent": "#38BDFA",
+    "accent_foreground": "#FFFFFF",
+    "background": "#FAF8F3",
+    "surface": "#FFFFFF",
+    "card": "#FFFFFF",
+    "text_primary": "#2D3B36",
+    "text_secondary": "#6B7B74",
+    "border": "#E8EDE8",
+    "subtitle_highlight": "#D1FAE5",
+    "vocab_learning": "#38BDFA",
+    "vocab_review": "#F59E0B",
+    "vocab_mastered": "#34D399",
+    "score_forgot": "#F87171",
+    "score_fuzzy": "#FBBF24",
+    "score_remember": "#34D399"
+  },
+  "typography": {
+    "font_primary": "Inter, -apple-system, sans-serif",
+    "font_display": "Inter, sans-serif",
+    "sizes": {
+      "display": "32px",
+      "h1": "24px",
+      "h2": "20px",
+      "h3": "18px",
+      "body": "16px",
+      "subtitle": "18px",
+      "label": "14px",
+      "caption": "12px"
+    }
+  },
+  "spacing": { "unit": 4, "scale": [4, 8, 12, 16, 20, 24, 32, 40, 48] },
+  "border_radius": { "sm": "8px", "md": "16px", "lg": "20px", "xl": "24px", "pill": "999px" },
+  "gradients": {
+    "primary": "linear-gradient(135deg, #34D399 0%, #10B981 100%)",
+    "accent": "linear-gradient(135deg, #38BDFA 0%, #0EA5E9 100%)",
+    "hero_bg": "linear-gradient(180deg, #F0FDF4 0%, #FAF8F3 100%)",
+    "card_warm": "linear-gradient(135deg, #FFFFFF 0%, #F7FDF9 100%)",
+    "achievement": "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)"
+  },
+  "shadows": {
+    "card": "0 2px 12px rgba(45, 59, 54, 0.06)",
+    "card_hover": "0 8px 24px rgba(45, 59, 54, 0.10)",
+    "button": "0 4px 14px rgba(52, 211, 153, 0.30)",
+    "sheet": "0 -8px 32px rgba(45, 59, 54, 0.12)",
+    "device": "0 24px 80px rgba(0, 0, 0, 0.35)"
+  },
+  "effects": {
+    "blur": { "sm": "4px", "md": "8px", "lg": "16px" },
+    "opacity": { "overlay": 0.45, "disabled": 0.5 },
+    "backdrop_blur": "blur(12px)"
+  },
+  "transitions": {
+    "default": "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+    "fast": "all 0.15s ease",
+    "spring": "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+    "ripple": "all 0.5s ease-out"
+  },
+  "device_frame": {
+    "width": "412px",
+    "height": "915px",
+    "bezel": "10px",
+    "corner_radius": "44px",
+    "status_bar_height": "36px",
+    "gesture_bar_height": "20px",
+    "punch_hole_diameter": "12px"
+  }
+}

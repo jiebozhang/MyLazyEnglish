@@ -1,0 +1,32 @@
+[
+  {
+    "pageKey": "Home",
+    "title": "孩子端首页",
+    "url": "/"
+  },
+  {
+    "pageKey": "VideoLibrary",
+    "title": "视频库",
+    "url": "/library"
+  },
+  {
+    "pageKey": "ProfileProgress",
+    "title": "我的学习进度",
+    "url": "/me"
+  },
+  {
+    "pageKey": "ParentConsole",
+    "title": "家长控制台",
+    "url": "/parent"
+  },
+  {
+    "pageKey": "Player",
+    "title": "沉浸式学习播放器",
+    "url": "/player/:videoId"
+  },
+  {
+    "pageKey": "VocabularyReview",
+    "title": "生词本与原句复习",
+    "url": "/vocabulary"
+  }
+]
