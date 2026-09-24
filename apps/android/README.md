@@ -16,10 +16,20 @@ Set `JAVA_HOME` to a JDK 17 installation before running Gradle. The local `gradl
 From this directory, run:
 
 ```powershell
-.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+.\gradlew.bat :app:assembleDebug
+.\gradlew.bat :app:assembleDebugAndroidTest :core:database:assembleDebugAndroidTest
+.\gradlew.bat :core:testing:test
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat lintDebug
+# Requires a connected device or emulator:
+.\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
 On macOS/Linux, use `./gradlew` with the same tasks. The wrapper pins Gradle 9.3.1.
+
+The PR workflow assembles the app and test APKs, runs `core/testing` JVM tests plus Android unit tests, and runs Lint. These checks do not download dictionary datasets or media files. `core/testing` is consumed only through test configurations and contains deterministic, in-memory fixtures and fakes.
+
+Compose UI tests belong in `app/src/androidTest` and run with a connected device. Database migration tests belong in `core/database/src/androidTest` and use `room-testing`. The database module has no Room schema yet, so T0-2 adds the test runner and dependency only; migration tests must be added with the first real schema in E1-T1, not simulated with a fake migration.
 
 ## Module map
 

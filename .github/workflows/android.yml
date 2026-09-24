@@ -30,4 +30,4 @@ jobs:
         run: if [ -f gradle.properties ]; then sed -i '/^org.gradle.java.home=/d' gradle.properties; fi
       - name: Verify Android project
         working-directory: apps/android
-        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+        run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :core:database:assembleDebugAndroidTest :core:testing:test testDebugUnitTest lintDebug
