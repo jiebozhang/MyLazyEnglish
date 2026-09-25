@@ -102,7 +102,13 @@ private fun PinForm(state: OnboardingUiState, onEvent: (OnboardingUiEvent) -> Un
             }
         }
     }
-    PrimaryButton(if (state.phase == OnboardingPhase.SET_PIN) "继续" else "确认", { onEvent(OnboardingUiEvent.SubmitPin) },
+    val submitLabel = when {
+        state.busy && state.phase == OnboardingPhase.VERIFY_PIN -> "验证中…"
+        state.busy -> "设置中…"
+        state.phase == OnboardingPhase.SET_PIN -> "继续"
+        else -> "确认"
+    }
+    PrimaryButton(submitLabel, { onEvent(OnboardingUiEvent.SubmitPin) },
         Modifier.fillMaxWidth().testTag("pin-submit"), enabled && state.enteredCount == 4)
     if (state.phase == OnboardingPhase.CONFIRM_PIN) SecondaryButton("重新设置", { onEvent(OnboardingUiEvent.RestartPin) }, enabled = enabled)
 }

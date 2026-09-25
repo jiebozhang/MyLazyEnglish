@@ -65,4 +65,12 @@ class OnboardingScreenTest {
         compose.onNodeWithText("重试").performClick()
         assertTrue(retried)
     }
+
+    @Test fun verifyingFeedbackIsVisibleAndBlocksDuplicateSubmission() {
+        show(OnboardingUiState(phase = OnboardingPhase.VERIFY_PIN, busy = true), 1.3f)
+        compose.onNodeWithTag("pin-submit").performScrollTo().assertIsDisplayed().assertIsNotEnabled()
+        compose.onNodeWithText("验证中…").assertIsDisplayed()
+        compose.onNodeWithTag("pin-digit-1").assertIsNotEnabled()
+        evidence("pin-verifying-font-1.3")
+    }
 }

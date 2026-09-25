@@ -1,5 +1,8 @@
 package com.lazyeng.family
 
+import android.graphics.Bitmap
+import android.view.WindowManager
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.lifecycle.Lifecycle
@@ -8,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lazyeng.family.core.security.KeystorePinRecordStore
 import java.security.SecureRandom
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
@@ -25,6 +29,28 @@ class OnboardingFlowTest {
     private fun enter(pin: CharArray) {
         pin.forEach { compose.onNodeWithTag("pin-digit-$it").performScrollTo().performClick() }
         compose.onNodeWithTag("pin-submit").performScrollTo().performClick()
+    }
+    private fun captureNonSecretFixture(scenario: ActivityScenario<MainActivity>, name: String) {
+        // Only synthetic Profile/home states; never remove protection while a PIN screen is visible.
+        scenario.onActivity { it.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        try {
+            compose.waitForIdle()
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val directory = File(context.filesDir, "onboarding-evidence").apply { mkdirs() }
+            File(directory, "$name.png").outputStream().use {
+                compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+        } finally {
+            scenario.onActivity { it.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        }
+    }
+    @Test fun restoresHomeAfterExternalProcessDeath() {
+        assumeTrue(InstrumentationRegistry.getArguments().getString("onboardingRestoration") == "true")
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitText("首页")
+            compose.onNodeWithText("家庭与孩子档案已准备好。学习内容将在后续版本接入。").assertIsDisplayed()
+            captureNonSecretFixture(scenario, "flow-home-after-process-death")
+        }
     }
     @Test fun setupMismatchDraftRecreationThrottleResetAndHome() {
         assumeTrue(InstrumentationRegistry.getArguments().getString("onboardingAcceptance") == "true")
@@ -47,6 +73,7 @@ class OnboardingFlowTest {
             awaitText("创建孩子档案")
             compose.onNodeWithTag("profile-nickname").assertTextContains("Fixture child")
             compose.onNodeWithTag("avatar-star").assertIsSelected()
+            captureNonSecretFixture(scenario, "flow-profile-restored")
             scenario.moveToState(Lifecycle.State.CREATED)
             scenario.moveToState(Lifecycle.State.RESUMED)
             compose.onNodeWithTag("profile-nickname").assertTextContains("Fixture child")
@@ -72,6 +99,7 @@ class OnboardingFlowTest {
             awaitText("首页")
             scenario.recreate()
             awaitText("首页")
+            captureNonSecretFixture(scenario, "flow-home")
         } finally {
             pin.fill('\u0000'); wrong.fill('\u0000'); scenario.close()
         }

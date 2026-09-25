@@ -2,7 +2,7 @@
 
 - Task: E1-T2; PRD v2.2 PRO-01 and security section 17; checklist sections 3.1, 8 and E1-T2.
 - Baseline: E1-T1 `5afff6d`, branch `codex/e1-t2-onboarding-pin-setup`.
-- Status: Implementation, host checks and device credential restart tests passed; Compose/UI acceptance blocked at instrumentation Activity startup.
+- Status: E1-T2 accepted on the development Xiaomi 10S (follow-up branch 3a); host, Compose, visual/large-font and device credential restart checks passed. Flagship KDF recheck remains assigned to INT-2.
 - Date: 2026-09-25.
 
 ## Boundaries and decisions
@@ -77,16 +77,58 @@ Result: BUILD SUCCESSFUL, 876 actionable tasks. The initial full run had 52 pass
 
 | Acceptance | Current evidence / conclusion |
 | --- | --- |
-| No skip before family/PIN/child | Coordinator/ViewModel tests passed; real full-flow test compiled, not yet run |
-| Resume without persisting raw PIN | Draft disk-reopening and ViewModel clearing/reconstruction passed; actual device process/rotation/background test pending |
-| Mismatched confirmation rejected | ViewModel assertion passed; device assertion pending |
-| Five failures / escalating lock | Host threshold/doubling/cap assertions passed; real locked UI pending |
-| Restart cannot erase lock | Production Keystore store passed two-process force-stop test; actual locked-screen restoration remains pending |
-| Successful verification resets counter | Host assertion passed; production device-flow assertion pending |
+| No skip before family/PIN/child | Coordinator/ViewModel assertions and real full-flow Compose test passed |
+| Resume without persisting raw PIN | Disk-reopening and ViewModel clearing passed; device recreation/background and separate force-stop/home restoration passed |
+| Mismatched confirmation rejected | ViewModel and real device-flow assertions passed |
+| Five failures / escalating lock | Host threshold/doubling/cap passed; real five-failure UI lock and 30-second wait passed |
+| Restart cannot erase lock | Production Keystore two-process force-stop test passed; actual locked-screen Activity close/relaunch passed |
+| Successful verification resets counter | Host and production device-flow assertions passed |
 | Provider/count evidence | Two real 10S calibration runs above; floor retained with explicit latency limitation |
 
-No screenshots are claimed or committed until the fixture screenshot tests actually execute. E1-T2 is **not fully accepted** while those device checks remain pending.
+The initial pending conclusion is superseded by the completed follow-up below.
+
+## Follow-up: loading feedback and device acceptance (3a)
+
+The existing busy state already displayed a progress indicator and disabled input/submit. The submit button now also says "验证中…" during verification and "设置中…" during setup, so feedback remains visible even when lower content is outside the viewport. Three deterministic unit tests suspend a PIN-store write with CompletableDeferred, assert busy immediately, reject duplicate input/submission, then release the operation and assert busy clears on success, wrong PIN and storage exception. A fifth screen test verifies the visible loading label and disabled controls at font scale 1.3.
+
+The requested device checks were performed in order:
+
+| Step | Observation / action |
+| --- | --- |
+| a. Don't keep activities | `always_finish_activities` returned `null`, not 1; it was not changed |
+| b. Foreground dialog | Window focus was MIUI Launcher, not a runtime-permission dialog; no unrelated permission was granted |
+| c. MIUI permissions | Both app/test packages had RUN_ANY_IN_BACKGROUND, MIUI auto-start (10008) and background Activity launch (10021) ignored; these three operations were allowed for only those two packages under the user's authorization |
+| d. Awake/unlocked | Screen timeout set to the requested 600000 ms; power state Awake and keyguard showing=false confirmed |
+
+The MIUI operation mapping is corroborated by [Telegram's XiaomiUtilities source](https://github.com/DrKLO/Telegram/blob/master/TMessagesProj/src/main/java/org/telegram/messenger/XiaomiUtilities.java). This is a vendor-specific device test prerequisite, not an Android production permission requirement. No root command, signature bypass, global security-policy change or overlay permission grant was used.
+
+After these changes, the first four screen tests passed in 12.574 s. Installing the updated APKs reset those MIUI operations to ignored, reproduced the launch wait and showed a fresh 10021 rejection. Reapplying the same authorized operations **after installation** resolved it again. Subsequent tests ran normally; no unrelated diagnostic methods were attempted.
+
+Final device execution used ordinary AndroidJUnitRunner over adb:
+
+```text
+adb -s <serial> shell am instrument -w -r -e class com.lazyeng.family.OnboardingScreenTest,com.lazyeng.family.OnboardingFlowTest -e onboardingAcceptance true com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+adb -s <serial> shell am force-stop com.lazyeng.family
+adb -s <serial> shell am instrument -w -r -e class com.lazyeng.family.OnboardingFlowTest#restoresHomeAfterExternalProcessDeath -e onboardingRestoration true com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+- Five screen tests plus the full flow: **6 passed, 0 failed**, 68.824 s. The flow performed real setup/mismatch, child draft entry, Activity recreation, background/foreground, a new Activity requiring PIN, five real wrong verifications, locked-screen relaunch, a real 30-second countdown, correct verification with persisted failure count reset to zero, Profile save and home.
+- A separate home restoration test was then added and executed after actual force-stop: **1 passed, 0 failed**, 2.263 s. An external live-process kill also observed PID 30406 disappear and a new launch receive PID 30483; the subsequent test asserts home content rather than relying on launch status alone.
+- Full Gradle build, test APK build, all host tests and Lint passed again: **57 host tests, zero failures/errors/skips**; 876 actionable tasks. Onboarding/security Lint has no issues; existing unrelated warnings remain.
+- Tests ran with real device system font scale 1.3; screen fixtures also explicitly use 1.3 where named. Original system font scale 1.0 was restored afterward. The requested screen timeout and scoped test-package MIUI grants remain enabled.
+
+### Screenshots
+
+All screenshots below were captured on the physical 10S and visually inspected for truncation/overlap; primary actions, keyboard and labels remain reachable. PIN images are deterministic no-secret Screen fixtures. The actual flow screenshots contain only the synthetic Profile/home; the test temporarily clears FLAG_SECURE solely on those non-PIN states and restores it in finally. Production PIN protection was neither removed nor disabled.
+
+- [PIN setup, 1.3x](evidence/e1-t2/pin-setup-font-1.3.png)
+- [Verification feedback, 1.3x](evidence/e1-t2/pin-verifying-font-1.3.png)
+- [Actual restored child draft, 1.3x](evidence/e1-t2/flow-profile-restored.png)
+- [Actual home after process death, 1.3x](evidence/e1-t2/flow-home-after-process-death.png)
+- [Six-test execution output](evidence/e1-t2/compose-acceptance.txt) and [separate restoration output](evidence/e1-t2/compose-process-restoration.txt).
+
+Other local captures remain under `apps/android/app/build/reports/e1-t2/screenshots/`. Shell uiautomator dump still cannot obtain idle state on this device; it is not used as a substitute for successful Compose assertions or screenshots. This limitation does not block the now-working Compose test route.
 
 ## Remaining scope
 
-Recheck target-device calibration during INT-2. No API-26 emulator retry, Profile-management UI, parent console, cloud recovery, provider-secret implementation or later Room schema is included. E1-T3 is the next task only after the remaining E1-T2 acceptance is resolved.
+Recheck target-device calibration during INT-2. No API-26 emulator retry, Profile-management UI, parent console, cloud recovery, provider-secret implementation or later Room schema is included. E1-T2 can now be marked complete with the already-agreed temporary 10S calibration note. E1-T3 is the next task; it has not been started.

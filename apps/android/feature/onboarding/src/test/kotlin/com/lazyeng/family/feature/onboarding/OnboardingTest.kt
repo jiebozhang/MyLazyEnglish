@@ -8,6 +8,7 @@ import com.lazyeng.family.core.model.*
 import com.lazyeng.family.core.security.*
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
 import org.junit.After
@@ -110,6 +111,37 @@ class OnboardingTest {
         assertEquals(5, fixture.record?.failures)
     }
 
+    @Test fun verificationLoadingEntersImmediatelyAndExitsOnSuccess() = runOnboardingTest {
+        verifyLoading(sample, OnboardingPhase.CREATE_PROFILE)
+    }
+
+    @Test fun verificationLoadingExitsOnWrongPin() = runOnboardingTest {
+        verifyLoading(sample.reversedArray(), OnboardingPhase.VERIFY_PIN)
+        assertNotNull(holder["onboarding"]?.let { (it as OnboardingViewModel).state.value.message })
+    }
+
+    @Test fun verificationLoadingExitsOnStorageFailure() = runOnboardingTest {
+        fixture.failPinWrite = false
+        verifyLoading(sample, OnboardingPhase.ERROR, failWrite = true)
+    }
+
+    private suspend fun TestScope.verifyLoading(input: CharArray, result: OnboardingPhase, failWrite: Boolean = false) {
+        coordinator().setPin(sample)
+        val vm = vm(); runCurrent()
+        fixture.pinWriteGate = CompletableDeferred()
+        fixture.failPinWrite = failWrite
+        input.forEach { vm.onEvent(OnboardingUiEvent.Digit(it.digitToInt())) }
+        vm.onEvent(OnboardingUiEvent.SubmitPin); runCurrent()
+        assertTrue(vm.state.value.busy)
+        assertEquals(OnboardingPhase.VERIFY_PIN, vm.state.value.phase)
+        vm.onEvent(OnboardingUiEvent.Digit(1))
+        vm.onEvent(OnboardingUiEvent.SubmitPin); runCurrent()
+        assertEquals(0, vm.state.value.enteredCount)
+        fixture.pinWriteGate!!.complete(Unit); runCurrent()
+        assertFalse(vm.state.value.busy)
+        assertEquals(result, vm.state.value.phase)
+    }
+
     private class Fixture : FamilyRepository, ProfileRepository, CurrentProfileStore, OnboardingDraftStore, PinRecordStore {
         var draft = OnboardingDraft(FamilyId("fixture-family"), ProfileId("fixture-profile"), Instant.EPOCH)
         var family: Family? = null
@@ -117,6 +149,8 @@ class OnboardingTest {
         var record: PinRecord? = null
         var selected: ProfileId? = null
         var failFamilySave = false
+        var failPinWrite = false
+        var pinWriteGate: CompletableDeferred<Unit>? = null
         override suspend fun getFamily(familyId: FamilyId) = family?.takeIf { it.id == familyId }
         override suspend fun saveFamily(family: Family) { check(!failFamilySave); this.family = family }
         override suspend fun getProfile(familyId: FamilyId, profileId: ProfileId) =
@@ -136,6 +170,10 @@ class OnboardingTest {
             draft = draft.copy(nickname = nickname, level = level, avatar = avatar); return draft
         }
         override suspend fun read() = record
-        override suspend fun write(record: PinRecord) { this.record = record }
+        override suspend fun write(record: PinRecord) {
+            pinWriteGate?.await()
+            check(!failPinWrite) { "test disk failure" }
+            this.record = record
+        }
     }
 }
