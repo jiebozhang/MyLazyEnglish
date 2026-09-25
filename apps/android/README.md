@@ -124,3 +124,15 @@ Room v3 adds scoped subtitle tracks, draft/published version storage and ordered
 ```
 
 Pure JVM parser tests require `:core:common:test` (not included by `testDebugUnitTest`). Synthetic file fixtures live in `core/common/src/test/resources/subtitles`; the optional `Generate-EncodingFixtures.ps1` reproduces byte-specific variants. They are already checked in, so ordinary tests require no PowerShell, download, dictionary or real media. Migration tests use isolated databases, not household data.
+
+## E3-T2 timeline, tokens and publication
+
+`TimelineValidator` and `SubtitleTokenizer` in core/common are pure JVM utilities. Timeline reports separate blocking errors from advisory warnings; offset previews never mutate input. Token ranges are UTF-16/end-exclusive with exact original substrings; normalized lookup forms are not guessed lemmas.
+
+`subtitleRepository().publish` validates and atomically publishes/selects a draft; callers receive detailed warnings/errors. Published metadata and lines cannot be edited or deleted through the Repository/DAO. Calibration/replacement must use new version/line IDs. Room remains v3 with unchanged schema exports. The default video repository now uses the real current-published-English checker, while media accessibility remains closed until E2-T2 supplies its adapter. ADR 0012 documents thresholds, contracts and limits.
+
+```text
+./gradlew :app:assembleDebug :core:model:test :core:common:test :core:testing:test testDebugUnitTest lintDebug --offline --console=plain
+```
+
+The new pure JVM and native-SQLite host tests cover offsets, timeline errors/warnings, draft CRUD, publication/rollback/concurrency, immutable history, scope and readiness. No UI or device permissions are involved. Next task: E2-T2.

@@ -26,9 +26,10 @@ abstract class FamilyDatabase : RoomDatabase() {
     internal abstract fun subtitleDao(): SubtitleDao
 
     fun subtitleRepository(): SubtitleCatalog = RoomSubtitleRepository(this)
+    fun subtitleReadinessChecker(): SubtitleReadinessChecker = RoomSubtitleReadinessChecker(this)
 
     fun videoRepository(media: MediaReadinessChecker = UnavailableMediaReadiness,
-        subtitles: SubtitleReadinessChecker = UnavailableSubtitleReadiness): VideoCatalog = RoomVideoRepository(this, media, subtitles)
+        subtitles: SubtitleReadinessChecker = subtitleReadinessChecker()): VideoCatalog = RoomVideoRepository(this, media, subtitles)
     fun videoAssetRepository(): VideoAssetRepository = RoomVideoRepository(this, UnavailableMediaReadiness, UnavailableSubtitleReadiness)
     fun importJobRepository(): ImportJobRepository = RoomVideoRepository(this, UnavailableMediaReadiness, UnavailableSubtitleReadiness)
     fun watchProgressRepository(): WatchProgressRepository = RoomVideoRepository(this, UnavailableMediaReadiness, UnavailableSubtitleReadiness)
