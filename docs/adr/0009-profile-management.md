@@ -58,7 +58,27 @@ Result: BUILD SUCCESSFUL, 25 seconds, 881 actionable tasks. **72 tests passed; 0
 
 ### Device acceptance status
 
-The first install attempt on the online 10S was rejected with `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user` while the window was AOD/keyguard. `always_finish_activities` returned `null`, not 1. Screen timeout was set to 600000 ms. The user was asked to unlock and allow USB installation; no root/signature bypass was attempted. Device Compose results and visual evidence remain pending until installation is permitted; host success alone does not complete this task.
+The first install attempt on the online 10S was rejected with `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user` while the window was AOD/keyguard. `always_finish_activities` returned `null`, not 1. Screen timeout was set to 600000 ms. After the user unlocked the device and was reminded to allow USB installation, both ordinary signed debug APKs installed successfully. No root/signature bypass was attempted.
+
+The previously authorized MIUI operations RUN_ANY_IN_BACKGROUND, 10008 and 10021 were reapplied to the app and test packages after installation. Tests then launched normally through the installed AndroidJUnitRunner:
+
+```text
+adb -s <serial> shell am instrument -w -r -e class com.lazyeng.family.ProfilesFlowTest com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+adb -s <serial> shell am instrument -w -r -e class com.lazyeng.family.OnboardingScreenTest com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+- Profile integration: **3 passed, 0 failed, 0 skipped**, 35.903 seconds. Covers switching with the old nickname absent, parent-gated creation/editing, a fresh deletion PIN, wrong-PIN rejection, cancellation retaining the member, successful deletion leaving siblings, busy input disabled, and background revocation requiring a new PIN.
+- Shared onboarding/PIN keypad regression: **5 passed, 0 failed, 0 skipped**, 9.558 seconds. No application code changes were necessary during this acceptance continuation.
+- Large-font tests use Compose density fontScale 1.3 on the physical 10S. Screenshots were visually inspected: labels do not overlap, the long editor scrolls to its complete Save action, and deletion confirmation/Cancel remain visible. This is a 1.3x rendering check, not an additional claim of changing the device-wide font setting.
+- Production `FLAG_SECURE` remains enabled. Profile screenshots below come only from the isolated synthetic test harness; no PIN digits or actual household records were captured.
+
+Evidence: [Profile runner output](evidence/e1-t3/compose-acceptance.txt), [shared keypad regression](evidence/e1-t3/onboarding-screen-regression.txt), [picker at 1.3x](evidence/e1-t3/picker-font-1.3.png), [editor top](evidence/e1-t3/editor-font-1.3-top.png), [editor Save](evidence/e1-t3/editor-font-1.3-actions.png), [deletion gate at 1.3x](evidence/e1-t3/delete-font-1.3.png), [parent overview](evidence/e1-t3/parent-overview.png), [after deletion](evidence/e1-t3/after-deletion.png), [switched home](evidence/e1-t3/switched-home.png).
+
+An extra attempt to reuse E1-T2's already-initialized MainActivity restoration test initially timed out waiting for Home. Inspection found no production PIN record and no current-profile preference, so the assumed initialized-installation prerequisite was absent. This failed attempt is retained in [the original output](evidence/e1-t3/main-restoration-before-initialization.txt); it is not counted as passed or silently discarded. The existing opt-in onboarding flow was then used to establish synthetic acceptance data; it refuses to overwrite an existing PIN record.
+
+The full MainActivity onboarding regression subsequently passed (**1 test, 55.454 seconds**), followed by an external `am force-stop` and the MainActivity Home restoration assertion (**1 test, 2.209 seconds**). See [initialization output](evidence/e1-t3/main-initialization.txt) and [successful post-stop restoration output](evidence/e1-t3/main-restoration.txt). The completed runs therefore cover **10 passing device tests** in total, in addition to 72 passing host tests. The installed app now contains the synthetic onboarding acceptance household with a randomly generated test PIN; it is not real family data, and no recoverable PIN is recorded in the evidence.
+
+E1-T3 acceptance is complete within its defined scope: scoped switch events and old-state clearing are covered by host tests plus device UI assertions; parent-only mutation and fresh deletion confirmation pass on-device; cleaner extensibility/rollback pass against real Room; overview screenshots contain no invented statistics; normal/1.3x layouts are inspected. There are no outstanding E1-T3 device-installation blockers. This result does not extend to deferred downstream cleanup or the INT-2 device matrix.
 
 ## Remaining boundaries
 
