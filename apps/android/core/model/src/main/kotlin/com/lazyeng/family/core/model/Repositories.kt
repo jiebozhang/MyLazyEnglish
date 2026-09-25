@@ -21,6 +21,9 @@ interface VideoRepository {
     suspend fun listVideos(profileId: ProfileId): List<Video>
     suspend fun saveVideo(profileId: ProfileId, video: Video)
     suspend fun archiveVideo(profileId: ProfileId, videoId: VideoId)
+}
+/** Reserved for the later deletion task, including learning-event snapshots and managed-file cleanup. */
+interface VideoDeletionRepository {
     suspend fun deleteVideoAndDetachMedia(profileId: ProfileId, videoId: VideoId)
 }
 /** Published versions are read-only; edits are represented by a new draft and publication. */

@@ -10,12 +10,24 @@ import com.lazyeng.family.core.model.ProfileDirectory
 import com.lazyeng.family.core.model.ProfileDeletionTransaction
 import com.lazyeng.family.core.model.FamilyRepository
 import com.lazyeng.family.core.model.ProfileRepository
+import com.lazyeng.family.core.model.VideoAssetRepository
+import com.lazyeng.family.core.model.ImportJobRepository
+import com.lazyeng.family.core.model.WatchProgressRepository
+import com.lazyeng.family.core.common.*
 
-@Database(entities = [FamilyEntity::class, ProfileEntity::class], version = 1, exportSchema = true)
-@TypeConverters(FamilyConverters::class)
+@Database(entities = [FamilyEntity::class, ProfileEntity::class, VideoEntity::class, VideoAssetEntity::class,
+    ImportJobEntity::class, WatchProgressEntity::class], version = 2, exportSchema = true)
+@TypeConverters(FamilyConverters::class, VideoConverters::class)
 abstract class FamilyDatabase : RoomDatabase() {
     internal abstract fun familyDao(): FamilyDao
     internal abstract fun profileDao(): ProfileDao
+    internal abstract fun videoDao(): VideoDao
+
+    fun videoRepository(media: MediaReadinessChecker = UnavailableMediaReadiness,
+        subtitles: SubtitleReadinessChecker = UnavailableSubtitleReadiness): VideoCatalog = RoomVideoRepository(this, media, subtitles)
+    fun videoAssetRepository(): VideoAssetRepository = RoomVideoRepository(this, UnavailableMediaReadiness, UnavailableSubtitleReadiness)
+    fun importJobRepository(): ImportJobRepository = RoomVideoRepository(this, UnavailableMediaReadiness, UnavailableSubtitleReadiness)
+    fun watchProgressRepository(): WatchProgressRepository = RoomVideoRepository(this, UnavailableMediaReadiness, UnavailableSubtitleReadiness)
 
     fun familyRepository(): FamilyRepository = RoomFamilyRepository(this)
     fun profileRepository(): ProfileRepository = RoomProfileRepository(this)
@@ -28,6 +40,6 @@ abstract class FamilyDatabase : RoomDatabase() {
         /** The application owns one instance and closes it only when its storage scope ends. */
         fun open(context: Context): FamilyDatabase = Room.databaseBuilder(
             context.applicationContext, FamilyDatabase::class.java, "family.db",
-        ).build()
+        ).addMigrations(VideoMigration.MIGRATION_1_2).build()
     }
 }

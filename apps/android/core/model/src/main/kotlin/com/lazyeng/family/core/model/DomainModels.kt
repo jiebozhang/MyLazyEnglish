@@ -41,6 +41,7 @@ sealed interface TranslationStatus {
     data object Stale : TranslationStatus
     data class Unknown(val raw: String) : TranslationStatus
 }
+enum class VideoLevelSource { MANUAL, ESTIMATED }
 data class VideoMetadata(
     val title: String,
     val coverAssetId: VideoAssetId?,
@@ -50,6 +51,7 @@ data class VideoMetadata(
     val subtitleWordCount: Int?,
     val accentTag: String?,
     val ageFit: String?,
+    val levelSource: VideoLevelSource? = null,
 )
 data class VideoRights(
     val ownerType: String,

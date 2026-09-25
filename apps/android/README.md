@@ -29,7 +29,7 @@ On macOS/Linux, use `./gradlew` with the same tasks. The wrapper pins Gradle 9.3
 
 The PR workflow assembles the app and test APKs, runs `core/testing` JVM tests plus Android unit tests, and runs Lint. These checks do not download dictionary datasets or media files. `core/testing` is consumed only through test configurations and contains deterministic, in-memory fixtures and fakes.
 
-Compose UI tests belong in `app/src/androidTest` and run with a connected device. Room v1 is owned by E1-T1 and exports `core/database/schemas/com.lazyeng.family.core.database.FamilyDatabase/1.json`. It is the initial schema and has no migration. Starting with E2-T1/v2, preserve prior schema files and add real migration tests using `room-testing`.
+Compose UI tests belong in `app/src/androidTest` and run with a connected device. Room v1 is owned by E1-T1 and its exported `core/database/schemas/com.lazyeng.family.core.database.FamilyDatabase/1.json` remains the initial fixture. E2-T1 upgrades the database to v2 with an explicit 1-to-2 migration and real host/device migration tests. Preserve all prior schema files.
 
 E1-T1 data-layer tests run on the host with Robolectric (API 28/native SQLite):
 
@@ -102,3 +102,14 @@ adb -s <serial> shell am instrument -w -r -e class com.lazyeng.family.ProfilesFl
 ```
 
 Synthetic screenshots are written to `files/profiles-evidence/`. The 1.3x cases override density in the Compose harness without changing the device's system font setting. Real PIN digits are neither logged nor captured; deletion-confirmation screenshots are taken before input. Production `FLAG_SECURE` is unchanged.
+
+## E2-T1 video persistence and migration
+
+Room v2 adds Video, VideoAsset, ImportJob and Profile-scoped WatchProgress. Existing Family/Profile data is preserved by `VideoMigration.MIGRATION_1_2`; no destructive or downgrade fallback exists. `FamilyDatabase.videoRepository` returns the result-bearing `VideoCatalog`; READY is denied by default until E3-T2 and E2-T2 supply real subtitle/media readiness checkers. See ADR 0010 for contracts, assumptions and test evidence.
+
+```text
+./gradlew :core:database:testDebugUnitTest :core:database:assembleDebugAndroidTest
+./gradlew :core:database:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.lazyeng.family.core.database.VideoMigrationDeviceTest
+```
+
+The migration test uses exported v1/v2 schema assets and an isolated database. It never resets the main application's data. Full validation also runs `:app:assembleDebug`, the three pure-Kotlin core test tasks, `testDebugUnitTest` and `lintDebug`. This task has no UI or real import workflow; next is E3-T1, not E2-T2.

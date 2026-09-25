@@ -14,6 +14,7 @@ android {
     }
     testOptions.unitTests.isIncludeAndroidResources = true
     sourceSets.getByName("test").resources.srcDir("schemas")
+    sourceSets.getByName("androidTest").assets.srcDir("schemas")
 }
 
 room {
@@ -35,4 +36,5 @@ dependencies {
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
