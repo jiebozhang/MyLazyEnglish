@@ -16,12 +16,16 @@ import com.lazyeng.family.core.model.WatchProgressRepository
 import com.lazyeng.family.core.common.*
 
 @Database(entities = [FamilyEntity::class, ProfileEntity::class, VideoEntity::class, VideoAssetEntity::class,
-    ImportJobEntity::class, WatchProgressEntity::class], version = 2, exportSchema = true)
+    ImportJobEntity::class, WatchProgressEntity::class, SubtitleTrackEntity::class,
+    SubtitleVersionEntity::class, SubtitleLineEntity::class], version = 3, exportSchema = true)
 @TypeConverters(FamilyConverters::class, VideoConverters::class)
 abstract class FamilyDatabase : RoomDatabase() {
     internal abstract fun familyDao(): FamilyDao
     internal abstract fun profileDao(): ProfileDao
     internal abstract fun videoDao(): VideoDao
+    internal abstract fun subtitleDao(): SubtitleDao
+
+    fun subtitleRepository(): SubtitleCatalog = RoomSubtitleRepository(this)
 
     fun videoRepository(media: MediaReadinessChecker = UnavailableMediaReadiness,
         subtitles: SubtitleReadinessChecker = UnavailableSubtitleReadiness): VideoCatalog = RoomVideoRepository(this, media, subtitles)
@@ -40,6 +44,6 @@ abstract class FamilyDatabase : RoomDatabase() {
         /** The application owns one instance and closes it only when its storage scope ends. */
         fun open(context: Context): FamilyDatabase = Room.databaseBuilder(
             context.applicationContext, FamilyDatabase::class.java, "family.db",
-        ).addMigrations(VideoMigration.MIGRATION_1_2).build()
+        ).addMigrations(VideoMigration.MIGRATION_1_2, SubtitleMigration.MIGRATION_2_3).build()
     }
 }

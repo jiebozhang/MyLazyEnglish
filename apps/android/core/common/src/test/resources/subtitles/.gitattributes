@@ -1,0 +1,8 @@
+# Byte-exact fixtures and deliberately whitespace-only cue separators.
+crlf.srt -text whitespace=cr-at-eol
+whitespace.srt -whitespace
+gbk.srt -text
+utf16le.srt -text
+utf16be.srt -text
+bom.srt -text
+invalid-encoding.srt -text

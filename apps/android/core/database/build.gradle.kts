@@ -15,6 +15,8 @@ android {
     testOptions.unitTests.isIncludeAndroidResources = true
     sourceSets.getByName("test").resources.srcDir("schemas")
     sourceSets.getByName("androidTest").assets.srcDir("schemas")
+    sourceSets.getByName("test").kotlin.srcDir("src/sharedTest/kotlin")
+    sourceSets.getByName("androidTest").kotlin.srcDir("src/sharedTest/kotlin")
 }
 
 room {

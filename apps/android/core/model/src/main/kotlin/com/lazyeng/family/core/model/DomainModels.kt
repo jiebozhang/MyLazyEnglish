@@ -98,25 +98,34 @@ data class SubtitleTrack(
     val sourceType: String,
     val currentVersionId: SubtitleVersionId?,
 )
+enum class SubtitleVersionStatus { DRAFT, PUBLISHED }
 sealed interface SubtitleVersion {
     val id: SubtitleVersionId
     val trackId: SubtitleTrackId
     val sourceHash: String
     val parserVersion: String
+    val sourceEncoding: String?
+    val status: SubtitleVersionStatus
 }
 data class DraftSubtitleVersion(
     override val id: SubtitleVersionId,
     override val trackId: SubtitleTrackId,
     override val sourceHash: String,
     override val parserVersion: String,
-) : SubtitleVersion
+    override val sourceEncoding: String? = null,
+) : SubtitleVersion {
+    override val status = SubtitleVersionStatus.DRAFT
+}
 class PublishedSubtitleVersion(
     override val id: SubtitleVersionId,
     override val trackId: SubtitleTrackId,
     override val sourceHash: String,
     override val parserVersion: String,
     val publishedAt: Instant,
-) : SubtitleVersion
+    override val sourceEncoding: String? = null,
+) : SubtitleVersion {
+    override val status = SubtitleVersionStatus.PUBLISHED
+}
 data class SubtitleLine(
     val id: SubtitleLineId,
     val versionId: SubtitleVersionId,

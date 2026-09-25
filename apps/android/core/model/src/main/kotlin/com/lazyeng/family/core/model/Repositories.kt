@@ -28,11 +28,16 @@ interface VideoDeletionRepository {
 }
 /** Published versions are read-only; edits are represented by a new draft and publication. */
 interface SubtitleRepository {
+    suspend fun saveTrack(profileId: ProfileId, track: SubtitleTrack)
     suspend fun getTrack(profileId: ProfileId, trackId: SubtitleTrackId): SubtitleTrack?
+    suspend fun getDraft(profileId: ProfileId, versionId: SubtitleVersionId): DraftSubtitleVersion?
     suspend fun listTracks(profileId: ProfileId, videoId: VideoId): List<SubtitleTrack>
     suspend fun getPublishedVersion(profileId: ProfileId, versionId: SubtitleVersionId): PublishedSubtitleVersion?
     suspend fun listLines(profileId: ProfileId, versionId: SubtitleVersionId, offset: Int, limit: Int): List<SubtitleLine>
     suspend fun saveDraft(profileId: ProfileId, version: DraftSubtitleVersion, lines: List<SubtitleLine>)
+}
+/** Publication, validation and current-version changes are owned by E3-T2. */
+interface SubtitlePublisher {
     suspend fun publishDraft(profileId: ProfileId, versionId: SubtitleVersionId, publishedAt: Instant): PublishedSubtitleVersion
 }
 interface DictionaryRepository {

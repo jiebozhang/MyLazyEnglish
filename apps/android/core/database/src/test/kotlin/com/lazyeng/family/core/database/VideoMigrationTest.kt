@@ -28,8 +28,8 @@ class VideoMigrationTest {
         createV1(file)
         val db = open(file)
         try {
-            // Opening through generated Room v2 validates all columns, keys, indices and affinities.
-            assertEquals(2, db.openHelper.writableDatabase.version)
+            // The original v1 fixture now upgrades through both migrations to the current schema.
+            assertEquals(3, db.openHelper.writableDatabase.version)
             assertEquals(familyA, db.familyRepository().getFamily(familyA.id))
             assertEquals(familyB, db.familyRepository().getFamily(familyB.id))
             assertEquals(sampleProfile(), db.profileRepository().getProfile(familyA.id, sampleProfile().id))
@@ -65,7 +65,7 @@ class VideoMigrationTest {
     }
 
     private fun open(file: File) = Room.databaseBuilder(RuntimeEnvironment.getApplication(), FamilyDatabase::class.java,
-        file.absolutePath).addMigrations(VideoMigration.MIGRATION_1_2).build()
+        file.absolutePath).addMigrations(VideoMigration.MIGRATION_1_2, SubtitleMigration.MIGRATION_2_3).build()
 
     private fun createV1(file: File) {
         val source = checkNotNull(javaClass.classLoader?.getResourceAsStream("com.lazyeng.family.core.database.FamilyDatabase/1.json"))

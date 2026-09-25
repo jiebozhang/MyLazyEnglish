@@ -113,3 +113,14 @@ Room v2 adds Video, VideoAsset, ImportJob and Profile-scoped WatchProgress. Exis
 ```
 
 The migration test uses exported v1/v2 schema assets and an isolated database. It never resets the main application's data. Full validation also runs `:app:assembleDebug`, the three pure-Kotlin core test tasks, `testDebugUnitTest` and `lintDebug`. This task has no UI or real import workflow; next is E3-T1, not E2-T2.
+
+## E3-T1 subtitle parsing and migration
+
+Room v3 adds scoped subtitle tracks, draft/published version storage and ordered lines. Both 1->2 and 2->3 migrations are registered; exported v1/v2 fixtures are retained. `SubtitleParser` in core/common parses bytes without Android or I/O, preserving source hash/encoding/parser version. Ambiguous legacy encodings require explicit selection. Unsupported WebVTT layout is reported, not silently discarded. Publication, timeline validation and the real subtitle readiness adapter remain E3-T2. See ADR 0011 for the exact subset and acceptance evidence.
+
+```text
+./gradlew :app:assembleDebug :core:database:assembleDebugAndroidTest :core:model:test :core:common:test :core:testing:test testDebugUnitTest lintDebug --offline --console=plain
+./gradlew :core:database:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.lazyeng.family.core.database.SubtitleMigrationDeviceTest
+```
+
+Pure JVM parser tests require `:core:common:test` (not included by `testDebugUnitTest`). Synthetic file fixtures live in `core/common/src/test/resources/subtitles`; the optional `Generate-EncodingFixtures.ps1` reproduces byte-specific variants. They are already checked in, so ordinary tests require no PowerShell, download, dictionary or real media. Migration tests use isolated databases, not household data.
