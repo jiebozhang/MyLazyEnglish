@@ -5,11 +5,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.lazyeng.family.core.model.FamilyId
 import com.lazyeng.family.core.model.ProfileId
 import java.time.Instant
 import java.util.UUID
+import kotlinx.coroutines.flow.first
 
 data class OnboardingDraft(
     val familyId: FamilyId,
@@ -23,6 +25,8 @@ data class OnboardingDraft(
 interface OnboardingDraftStore {
     suspend fun loadOrCreate(): OnboardingDraft
     suspend fun saveDetails(nickname: String, level: String, avatar: String): OnboardingDraft
+    suspend fun completed(): Boolean
+    suspend fun markCompleted()
 }
 
 // Corrupt onboarding state must fail closed, not silently create new family identities.
@@ -33,6 +37,8 @@ class PreferencesOnboardingDraftStore(
     private val now: () -> Instant = Instant::now,
     private val newId: () -> String = { UUID.randomUUID().toString() },
 ) : OnboardingDraftStore {
+    override suspend fun completed(): Boolean = store.data.first()[COMPLETED] ?: false
+    override suspend fun markCompleted() { store.edit { decode(it); it[COMPLETED] = true } }
     override suspend fun loadOrCreate(): OnboardingDraft {
         val saved = store.edit {
             if (it.asMap().isEmpty()) {
@@ -61,6 +67,7 @@ class PreferencesOnboardingDraftStore(
         checkNotNull(data[LEVEL]), checkNotNull(data[AVATAR]),
     )
     companion object {
+        private val COMPLETED = booleanPreferencesKey("completed")
         private val FAMILY = stringPreferencesKey("family_id")
         private val PROFILE = stringPreferencesKey("profile_id")
         private val CREATED = stringPreferencesKey("created_at")

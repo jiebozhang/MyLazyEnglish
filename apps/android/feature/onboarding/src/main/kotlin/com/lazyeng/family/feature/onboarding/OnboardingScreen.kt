@@ -3,8 +3,6 @@ package com.lazyeng.family.feature.onboarding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -85,31 +83,15 @@ private fun PinForm(state: OnboardingUiState, onEvent: (OnboardingUiEvent) -> Un
             .semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.error)
     }
     val enabled = !state.busy && state.remainingSeconds == 0L
-    Column(verticalArrangement = Arrangement.spacedBy(LazyEngSpacing.small)) {
-        for (row in listOf(listOf(1, 2, 3), listOf(4, 5, 6), listOf(7, 8, 9))) {
-            Row(horizontalArrangement = Arrangement.spacedBy(LazyEngSpacing.medium)) {
-                row.forEach { number -> SecondaryButton(number.toString(), { onEvent(OnboardingUiEvent.Digit(number)) },
-                    Modifier.weight(1f).testTag("pin-digit-$number"), enabled) }
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(LazyEngSpacing.medium), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f))
-            SecondaryButton("0", { onEvent(OnboardingUiEvent.Digit(0)) }, Modifier.weight(1f).testTag("pin-digit-0"), enabled)
-            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                IconButton({ onEvent(OnboardingUiEvent.Backspace) }, Modifier.testTag("pin-backspace"), enabled) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "删除上一位")
-                }
-            }
-        }
-    }
     val submitLabel = when {
         state.busy && state.phase == OnboardingPhase.VERIFY_PIN -> "验证中…"
         state.busy -> "设置中…"
         state.phase == OnboardingPhase.SET_PIN -> "继续"
         else -> "确认"
     }
-    PrimaryButton(submitLabel, { onEvent(OnboardingUiEvent.SubmitPin) },
-        Modifier.fillMaxWidth().testTag("pin-submit"), enabled && state.enteredCount == 4)
+    PinKeypad(state.enteredCount, enabled, submitLabel,
+        { onEvent(OnboardingUiEvent.Digit(it)) }, { onEvent(OnboardingUiEvent.Backspace) },
+        { onEvent(OnboardingUiEvent.SubmitPin) })
     if (state.phase == OnboardingPhase.CONFIRM_PIN) SecondaryButton("重新设置", { onEvent(OnboardingUiEvent.RestartPin) }, enabled = enabled)
 }
 

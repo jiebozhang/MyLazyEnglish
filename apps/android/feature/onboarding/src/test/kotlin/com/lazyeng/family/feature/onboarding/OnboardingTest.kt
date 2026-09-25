@@ -101,6 +101,18 @@ class OnboardingTest {
         assertEquals(OnboardingPhase.ERROR, vm.state.value.phase)
     }
 
+    @Test fun completedOnboardingNeverResetsSelectionOrRecreatesDeletedFirstProfile() = runOnboardingTest {
+        coordinator().setPin(sample)
+        fixture.isCompleted = true
+        fixture.selected = ProfileId("another-fixture")
+        assertEquals(OnboardingPhase.COMPLETE, coordinator().restore().phase)
+        assertEquals(ProfileId("another-fixture"), fixture.selected)
+        fixture.selected = null
+        assertEquals(OnboardingPhase.COMPLETE, coordinator().restore().phase)
+        assertNull(fixture.profile)
+        assertNull(fixture.selected)
+    }
+
     @Test fun lockIsRestoredIntoUiStateAndNoAttemptIsAcceptedBeforeDeadline() = runOnboardingTest {
         coordinator().setPin(sample)
         repeat(5) { pins.verify(fixture.draft.familyId, sample.reversedArray()) }
@@ -149,6 +161,9 @@ class OnboardingTest {
         var record: PinRecord? = null
         var selected: ProfileId? = null
         var failFamilySave = false
+        var isCompleted = false
+        override suspend fun completed() = isCompleted
+        override suspend fun markCompleted() { isCompleted = true }
         var failPinWrite = false
         var pinWriteGate: CompletableDeferred<Unit>? = null
         override suspend fun getFamily(familyId: FamilyId) = family?.takeIf { it.id == familyId }

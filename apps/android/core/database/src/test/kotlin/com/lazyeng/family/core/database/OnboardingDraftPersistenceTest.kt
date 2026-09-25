@@ -29,6 +29,8 @@ class OnboardingDraftPersistenceTest {
         val original = PreferencesOnboardingDraftStore(data, { Instant.EPOCH }, { "fixture-${counter++}" })
         val created = original.loadOrCreate()
         val saved = original.saveDetails("Fixture child", "Fixture level", "star")
+        assertFalse(original.completed())
+        original.markCompleted()
         assertEquals(created.familyId, saved.familyId)
         assertEquals(created.profileId, saved.profileId)
         job.cancelAndJoin()
@@ -37,7 +39,8 @@ class OnboardingDraftPersistenceTest {
         try {
             val restored = PreferencesOnboardingDraftStore(data, { error("No real time needed") }, { error("No new ID") })
             assertEquals(saved, restored.loadOrCreate())
-            assertEquals(setOf("family_id", "profile_id", "created_at", "nickname", "level", "avatar"),
+            assertTrue(restored.completed())
+            assertEquals(setOf("family_id", "profile_id", "created_at", "nickname", "level", "avatar", "completed"),
                 data.data.first().asMap().keys.map { it.name }.toSet())
         } finally { job.cancelAndJoin() }
     }

@@ -17,6 +17,8 @@ internal interface FamilyDao {
 
 @Dao
 internal interface ProfileDao {
+    @Query("SELECT id, nickname, avatar_id, role, english_level FROM profiles WHERE family_id = :familyId AND deleted_at IS NULL ORDER BY created_at, id")
+    suspend fun choices(familyId: String): List<ProfileChoiceRow>
     @Query("SELECT * FROM profiles WHERE family_id = :familyId AND id = :profileId AND deleted_at IS NULL")
     suspend fun getActive(familyId: String, profileId: String): ProfileEntity?
 
@@ -42,3 +44,7 @@ internal interface ProfileDao {
     """)
     suspend fun markDeleted(familyId: String, profileId: String, deletedAt: Instant)
 }
+
+internal data class ProfileChoiceRow(
+    val id: String, val nickname: String, val avatar_id: String?, val role: String, val english_level: String,
+)

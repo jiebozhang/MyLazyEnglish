@@ -83,3 +83,22 @@ UI fixture screenshots are written under the test app's `files/onboarding-eviden
 E1-T2's separate `OnboardingFlowTest#restoresHomeAfterExternalProcessDeath` test uses the opt-in runner argument `onboardingRestoration=true` after the full flow and an external `adb shell am force-stop`. It never initializes missing household data. The flow captures only synthetic non-PIN Profile/home content, temporarily clearing its test Activity's secure window flag and restoring it immediately; production PIN screens remain protected.
 
 On the development MIUI device, APK installation resets background-start permissions. With the device owner's approval, both app/test packages need MIUI auto-start/background Activity launch and RUN_ANY_IN_BACKGROUND allowed **after installation**, then the installed test APK can be run with `adb shell am instrument`. Otherwise ActivityScenario can stall before rendering. These are device-local settings, not production app permissions or project build configuration. Detailed diagnosis and successful 1.3x screenshots are in ADR 0008.
+
+## E1-T3 Profile management
+
+The home placeholder now opens the child-accessible picker and PIN-gated parent member management. Parent management creates/edits Profile fields; deleting requires a fresh second PIN. Room remains v1. See ADR 0009 for the limited directory projection, event contract, atomic cleaner registration and onboarding completion preference.
+
+The Profile integration suite uses isolated synthetic Room/DataStore/Keystore records and can run without resetting existing household data:
+
+```text
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :core:model:test :core:common:test :core:testing:test testDebugUnitTest lintDebug
+./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.lazyeng.family.ProfilesFlowTest
+```
+
+On MIUI, after installing both APKs and reapplying the authorized device-local launch settings, the equivalent installed runner is:
+
+```text
+adb -s <serial> shell am instrument -w -r -e class com.lazyeng.family.ProfilesFlowTest com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+Synthetic screenshots are written to `files/profiles-evidence/`. The 1.3x cases override density in the Compose harness without changing the device's system font setting. Real PIN digits are neither logged nor captured; deletion-confirmation screenshots are taken before input. Production `FLAG_SECURE` is unchanged.

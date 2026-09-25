@@ -5,6 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.withTransaction
+import com.lazyeng.family.core.model.ProfileDirectory
+import com.lazyeng.family.core.model.ProfileDeletionTransaction
 import com.lazyeng.family.core.model.FamilyRepository
 import com.lazyeng.family.core.model.ProfileRepository
 
@@ -16,6 +19,10 @@ abstract class FamilyDatabase : RoomDatabase() {
 
     fun familyRepository(): FamilyRepository = RoomFamilyRepository(this)
     fun profileRepository(): ProfileRepository = RoomProfileRepository(this)
+    fun profileDirectory(): ProfileDirectory = RoomProfileRepository(this)
+    fun profileDeletionTransaction(): ProfileDeletionTransaction = ProfileDeletionTransaction { block ->
+        withTransaction { block() }
+    }
 
     companion object {
         /** The application owns one instance and closes it only when its storage scope ends. */

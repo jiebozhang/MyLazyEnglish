@@ -30,8 +30,15 @@ class OnboardingCoordinator(
             check(families.getFamily(draft.familyId) == null) { "PIN record missing for existing family" }
             return RestoredOnboarding(draft, OnboardingPhase.SET_PIN)
         }
+        if (drafts.completed()) {
+            check(families.getFamily(draft.familyId) != null)
+            return RestoredOnboarding(draft, OnboardingPhase.COMPLETE)
+        }
         if (profiles.getProfile(draft.familyId, draft.profileId) != null) {
-            check(selection.selectProfile(draft.familyId, draft.profileId))
+            if (selection.getCurrentProfileId(draft.familyId) == null) {
+                check(selection.selectProfile(draft.familyId, draft.profileId))
+            }
+            drafts.markCompleted()
             return RestoredOnboarding(draft, OnboardingPhase.COMPLETE)
         }
         return RestoredOnboarding(draft,
@@ -66,6 +73,7 @@ class OnboardingCoordinator(
         )
         profiles.saveProfile(draft.familyId, draft.profileId, profile)
         check(selection.selectProfile(draft.familyId, draft.profileId))
+        drafts.markCompleted()
     }
     private suspend fun ensureFamily(draft: OnboardingDraft) {
         if (families.getFamily(draft.familyId) == null) {

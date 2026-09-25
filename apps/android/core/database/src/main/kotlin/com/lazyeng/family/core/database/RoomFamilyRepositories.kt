@@ -7,6 +7,9 @@ import com.lazyeng.family.core.model.FamilyRepository
 import com.lazyeng.family.core.model.Profile
 import com.lazyeng.family.core.model.ProfileId
 import com.lazyeng.family.core.model.ProfileRepository
+import com.lazyeng.family.core.model.ProfileDirectory
+import com.lazyeng.family.core.model.ProfileChoice
+import com.lazyeng.family.core.model.ProfileRole
 import java.time.Instant
 
 internal class RoomFamilyRepository(private val database: FamilyDatabase) : FamilyRepository {
@@ -28,7 +31,11 @@ internal class RoomFamilyRepository(private val database: FamilyDatabase) : Fami
     }
 }
 
-internal class RoomProfileRepository(private val database: FamilyDatabase) : ProfileRepository {
+internal class RoomProfileRepository(private val database: FamilyDatabase) : ProfileRepository, ProfileDirectory {
+    override suspend fun choices(familyId: FamilyId): List<ProfileChoice> =
+        database.profileDao().choices(familyId.value).map {
+            ProfileChoice(ProfileId(it.id), it.nickname, it.avatar_id, ProfileRole.valueOf(it.role), it.english_level)
+        }
     override suspend fun getProfile(familyId: FamilyId, profileId: ProfileId): Profile? =
         database.profileDao().getActive(familyId.value, profileId.value)?.toDomain()
 
