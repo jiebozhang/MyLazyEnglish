@@ -73,6 +73,7 @@ private class SpikeRunner(private val activity: Activity) {
     fun run(mode: String, cipherExtra: String?, digestExtra: String?): String {
         when (mode) {
             "baseline" -> runBaseline()
+            "calibrate" -> runKdfCalibration()
             "verify-process" -> runProcessRestartCheck()
             "verify-uninstall" -> runUninstallCheck(cipherExtra, digestExtra)
             else -> results += "FAIL unknown mode"

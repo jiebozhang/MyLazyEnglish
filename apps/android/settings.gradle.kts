@@ -24,6 +24,7 @@ include(
     ":core:designsystem",
     ":core:database",
     ":core:datastore",
+    ":core:security",
     ":core:media",
     ":core:network",
     ":core:testing",

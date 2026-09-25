@@ -1,66 +1,65 @@
 package com.lazyeng.family
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.lazyeng.family.core.designsystem.EmptyState
 import com.lazyeng.family.core.designsystem.LazyEngTheme
+import com.lazyeng.family.feature.onboarding.OnboardingPhase
+import com.lazyeng.family.feature.onboarding.OnboardingRoute
+import com.lazyeng.family.feature.onboarding.OnboardingUiEffect
+import com.lazyeng.family.feature.onboarding.OnboardingViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        val dependencies = application as LazyEngApplication
+        val factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                OnboardingViewModel(dependencies.onboardingCoordinator(), dependencies.clock) as T
+        }
         setContent {
             LazyEngTheme {
-                ProjectScaffold(versionName = BuildConfig.VERSION_NAME)
+                val onboarding: OnboardingViewModel = viewModel(factory = factory)
+                val state by onboarding.state.collectAsStateWithLifecycle()
+                val navigation = rememberNavController()
+                LaunchedEffect(onboarding, navigation) {
+                    onboarding.effects.collect { effect ->
+                        if (effect == OnboardingUiEffect.EnterHome && onboarding.state.value.phase == OnboardingPhase.COMPLETE) {
+                            navigation.navigate("home") { popUpTo("onboarding") { inclusive = true }; launchSingleTop = true }
+                        }
+                    }
+                }
+                NavHost(navigation, startDestination = "onboarding") {
+                    composable("onboarding") { OnboardingRoute(onboarding) }
+                    composable("home") {
+                        // A restored back stack cannot bypass durable initialization checks.
+                        if (state.phase == OnboardingPhase.COMPLETE) {
+                            Surface(Modifier.fillMaxSize().safeDrawingPadding()) {
+                                EmptyState("首页", "家庭与孩子档案已准备好。学习内容将在后续版本接入。")
+                            }
+                        } else OnboardingRoute(onboarding)
+                    }
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun ProjectScaffold(versionName: String) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = "Android 工程已就绪 · $versionName",
-                modifier = Modifier.padding(top = 12.dp),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ProjectScaffoldPreview() {
-    LazyEngTheme {
-        ProjectScaffold(versionName = "0.1.0")
     }
 }

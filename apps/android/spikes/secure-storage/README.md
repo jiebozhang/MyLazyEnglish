@@ -41,3 +41,5 @@ $digest = (& $adb -s $serial shell run-as $pkg cat files/probe.sha256).Trim()
 ```
 
 The host variables carry only encrypted test bytes and a one-way digest. Never replace the generated test material with real credentials.
+
+For E1-T2 calibration only, launch the same Activity with `--es mode calibrate`. This executes the existing warm-up/seven-sample baseline/seven-sample candidate method, without repeating uninstall or Keystore capability tests. It uses Android's default JCA provider and reports the provider actually selected; it does not explicitly select BC. Read `files/spike-report.txt` after completion. E1-T2's measured values and temporary production decision are in ADR 0008.

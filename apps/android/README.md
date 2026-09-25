@@ -45,7 +45,37 @@ These tests execute the generated Room DAO implementations, verify exact v1 colu
 
 - `app`: application entry point and assembly.
 - `core/model`, `core/common`, `core/testing`: pure Kotlin modules.
-- `core/designsystem`, `core/database`, `core/datastore`, `core/media`, `core/network`: shared Android modules.
+- `core/designsystem`, `core/database`, `core/datastore`, `core/security`, `core/media`, `core/network`: shared Android modules.
 - `feature/onboarding`, `profiles`, `home`, `library`, `importmedia`, `player`, `dictionary`, `vocabulary`, `progress`, `parent`: isolated feature modules.
 
 Features depend on shared core modules and do not depend on each other. Modules gain behavior only in their owning tasks. E1-T1 adds only Family/Profile persistence in Room v1 and current-selection preferences in DataStore.
+
+## E1-T2 onboarding and PIN
+
+The app now starts with native onboarding: family/PIN confirmation, a child Profile, then a home placeholder. It uses the existing domain repositories and Room v1 without changing its schema. Non-secret drafts live in DataStore; one-way PIN verifiers and durable throttle metadata live in a Keystore-protected, non-backed-up atomic file. No raw PIN is saved. See ADR 0008 for recovery semantics and measured temporary KDF parameters.
+
+Host verification:
+
+```text
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :core:model:test :core:common:test :core:testing:test testDebugUnitTest lintDebug
+```
+
+The default connected test suite runs stateless onboarding UI tests. Full-flow acceptance is opt-in and requires an unused test installation; it refuses to overwrite any existing PIN record:
+
+```text
+./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.lazyeng.family.OnboardingScreenTest
+./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.lazyeng.family.OnboardingFlowTest -Pandroid.testInstrumentationRunnerArguments.onboardingAcceptance=true
+```
+
+After installing both app/test APKs on a chosen test device, the following separate instrumentation processes verify the production encrypted store across an actual force-stop. They use an isolated cache subdirectory and a controlled clock, never the household record or a hardcoded PIN:
+
+```text
+adb -s <serial> shell am instrument -w -e class com.lazyeng.family.PinProcessRestartTest#prepare -e pinProcessPhase prepare com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+adb -s <serial> shell am force-stop com.lazyeng.family
+adb -s <serial> shell pidof com.lazyeng.family
+adb -s <serial> shell am instrument -w -e class com.lazyeng.family.PinProcessRestartTest#verify -e pinProcessPhase verify com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+Prepare must run on an unused `cache/pin-process-fixture` directory. The verifier survives the process change and remains locked at the injected timestamp; this is a persistence proof, not a real-time 30-second duration measurement. The full-flow UI test separately waits out the real 30-second lock and verifies successful reset. These explicit acceptance tests are skipped unless their matching runner argument is present; skipped tests must not be reported as passed.
+
+UI fixture screenshots are written under the test app's `files/onboarding-evidence/`. They contain only synthetic text. Production screens keep `FLAG_SECURE` enabled, including during acceptance; do not disable it to capture PIN input or bypass device installation restrictions.
