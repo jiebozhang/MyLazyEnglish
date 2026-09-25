@@ -49,3 +49,7 @@ Android Keystore AES-GCM is viable for protecting provider credentials on the te
 The mandatory minimum iteration count takes about 1.77 seconds on this device, not about 250 ms. Keep the minimum; evaluate on Xiaomi 15 Ultra before setting the final measured E1-T2 value. This spike's UI harness, in-memory failure stubs, and SharedPreferences limiter are not production code and must not be reused as the final E1-T2/E6-T1 architecture without review.
 
 Reproduction instructions are in [the spike README](../apps/android/spikes/secure-storage/README.md). The debug APK and captured device screenshot are build artifacts and are not committed.
+
+## Follow-up: PBKDF2 Calibration Ownership
+
+The final PBKDF2 iteration-count performance decision is deferred to E1-T2 on the formal target device (Xiaomi 15 Ultra or an equivalent current flagship). The current development device, Xiaomi 10S, is older; its measured latency is not representative enough to set the production target, so this follow-up does not repeat the measurement. The Keystore encryption/decryption, persistent failure throttling, and fail-closed/no-plaintext-fallback conclusions above remain verified and unchanged.
