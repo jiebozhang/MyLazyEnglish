@@ -7,11 +7,13 @@ interface FamilyRepository {
     suspend fun getFamily(familyId: FamilyId): Family?
     suspend fun saveFamily(family: Family)
 }
-/** Profile lookup and mutations are always addressed to one explicit profile. */
+/** Both household and profile must match; missing/deleted/cross-household reads return null. */
 interface ProfileRepository {
-    suspend fun getProfile(profileId: ProfileId): Profile?
-    suspend fun saveProfile(profileId: ProfileId, profile: Profile)
-    suspend fun deleteProfile(profileId: ProfileId, deletedAt: Instant)
+    suspend fun getProfile(familyId: FamilyId, profileId: ProfileId): Profile?
+    /** Creates or edits a live profile without changing its owner, creation time, or tombstone. */
+    suspend fun saveProfile(familyId: FamilyId, profileId: ProfileId, profile: Profile)
+    /** Idempotent tombstone; absent or cross-household targets are a no-op. */
+    suspend fun deleteProfile(familyId: FamilyId, profileId: ProfileId, deletedAt: Instant)
 }
 /** Videos are visible only within the requesting profile's authorized household scope. */
 interface VideoRepository {
