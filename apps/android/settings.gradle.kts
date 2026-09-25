@@ -16,6 +16,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "LazyEngFamily"
 include(":app")
+include(":spikes:secure-storage")
 include(
     ":core:common",
     ":core:model",
