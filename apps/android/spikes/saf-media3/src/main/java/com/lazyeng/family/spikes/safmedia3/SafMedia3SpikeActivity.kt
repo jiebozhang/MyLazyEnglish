@@ -233,13 +233,19 @@ class SafMedia3SpikeActivity : ComponentActivity() {
                 recordStatus("PLAYBACK_REQUESTED")
             }
         } catch (error: SecurityException) {
-            showError("PERMISSION_REVOKED: access to the selected document was denied")
+            showError(classify(error))
         } catch (error: Exception) {
             showError(classify(error))
         }
     }
 
-    private fun classify(error: Throwable): String = "${MediaAccessFailure.from(error)}: select an accessible video again"
+    private fun classify(error: Throwable): String {
+        val uri = currentUri
+        val hasPersistedReadGrant = uri != null && contentResolver.persistedUriPermissions.any {
+            it.uri == uri && it.isReadPermission
+        }
+        return "${MediaAccessFailure.from(error, hasPersistedReadGrant)}: select an accessible video again"
+    }
 
     private fun showError(message: String) {
         status.text = message

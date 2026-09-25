@@ -35,9 +35,9 @@ Runtime validation used the user-approved Xiaomi 10S (`M2102J2SC`, `thyme`), API
 | End-to-end restart | No picker interaction; persisted grant true, same metadata, first frame, READY/playing true, ENDED at 5004 ms | Pass |
 | No private media copy | `cache` empty; `files` held only 24-byte framework `profileInstalled` and the diagnostic report; preferences held the Uri | Pass for inspected files/cache/preferences; source has no media-copy/cache code |
 | Original file removed | Checked device/host SHA-256 equality, deleted only the synthetic file, restarted PID 9139 | Access error detected |
-| Error handling and retry | Provider threw `SecurityException`; classified `PERMISSION_REVOKED` with reselect action; repeated Read metadata returned the same error, PID 9139 stayed alive | Pass, no crash or stuck read |
+| Error handling and retry | Provider threw `SecurityException`; the original classifier labeled it `PERMISSION_REVOKED`; repeated Read metadata returned the same error, PID 9139 stayed alive | Pass, no crash or stuck read |
 
-The deletion test did **not** yield `FileNotFoundException` on this provider. `PERMISSION_REVOKED` is the spike's mapping for access denial, not proof that a person revoked permission in Settings. E2-T2 must offer re-selection for either permission loss or missing media and avoid promising that a particular platform exception uniquely identifies the cause. Settings-based manual revocation was not independently exercised; actual file deletion satisfies the alternative exception scenario in this task.
+The deletion test did **not** yield `FileNotFoundException` on this provider. The spike classifier now distinguishes `SOURCE_FILE_MISSING` from `PERMISSION_REVOKED`: `FileNotFoundException`, or `SecurityException` while the Uri still has a persisted read grant, maps to `SOURCE_FILE_MISSING`; a `SecurityException` with no persisted read grant maps to `PERMISSION_REVOKED`. Unit tests cover both branches. The previous device run recorded the provider exception, but did not snapshot the grant list at the time of deletion, so this follow-up did not claim a device-verified error label for that run. E2-T2 must validate this inference against target providers and offer re-selection for either condition. Settings-based manual revocation was not tested and remains explicitly unverified; E2-T2 must verify it.
 
 Raw app callback evidence is retained in [0006-device-report.txt](evidence/0006-device-report.txt). Screenshots remain ignored build artifacts under `apps/android/spikes/saf-media3/build/evidence/`: `baseline.png`, `pause-after-seek.png`, `restart-playing.png`, `missing-file.png`. Restart screenshot shows the generated frame timestamp advancing and the pause control visible. Screenshots of unrelated picker contents are excluded from evidence.
 
@@ -50,7 +50,7 @@ gradlew -p apps/android :spikes:saf-media3:assembleDebug :spikes:saf-media3:test
 ```
 
 - Build: successful; debug APK installed normally on Xiaomi 10S.
-- Unit tests: **3 passed, 0 failures/errors/skips**, covering access-denied, missing-file versus other I/O, unsupported-media and unexpected-error classification.
+- Unit tests after the error-code follow-up: **4 passed, 0 failures/errors/skips**, covering retained versus absent read grants, missing-source versus other I/O, unsupported-media and unexpected-error classification.
 - Lint: **No issues found**. Diagnostic text deliberately stays English in this temporary harness.
 - No instrumentation package is required for this spike. Device evidence comes from actual system picker interaction, ExoPlayer callbacks, force-stop/relaunch, source deletion, and private-storage inspection.
 - Reproduction instructions and fixture generator: [spike README](../../apps/android/spikes/saf-media3/README.md).

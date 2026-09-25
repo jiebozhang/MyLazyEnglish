@@ -67,7 +67,7 @@ adb -s $serial shell am start -W -n $activity
 adb -s $serial shell run-as $spikePackage cat files/spike-report.txt
 ```
 
-`FileNotFoundException` maps to `FILE_MISSING`; `SecurityException` maps to `PERMISSION_REVOKED`. On the measured MIUI provider, deleting the sample produced the latter, so do not infer the precise user action from this code alone. Both instruct the caller to reselect accessible media. Manual revocation in Android Settings was not device-tested; the task's alternative actual file-removal scenario was tested.
+`FileNotFoundException` maps to `SOURCE_FILE_MISSING`. A `SecurityException` maps to `SOURCE_FILE_MISSING` while a persisted read grant for the Uri remains, and to `PERMISSION_REVOKED` when no such grant remains. Both direct the caller to reselect accessible media. The measured MIUI provider returned `SecurityException` after source deletion; manual revocation in Android Settings was not device-tested, and provider-specific behavior must be verified during E2-T2.
 
 Detailed outcomes and limitations: [ADR 0006](../../../../docs/adr/0006-saf-media3-spike.md).
 

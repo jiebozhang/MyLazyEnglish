@@ -6,11 +6,20 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class MediaAccessFailureTest {
-    @Test fun revokedPermissionIsActionable() {
-        assertEquals(MediaAccessFailure.PERMISSION_REVOKED, MediaAccessFailure.from(SecurityException()))
+    @Test fun securityFailureWithPersistedGrantMeansSourceIsUnavailable() {
+        assertEquals(
+            MediaAccessFailure.SOURCE_FILE_MISSING,
+            MediaAccessFailure.from(SecurityException(), hasPersistedReadGrant = true),
+        )
     }
-    @Test fun missingFileIsDistinctFromOtherIoFailures() {
-        assertEquals(MediaAccessFailure.FILE_MISSING, MediaAccessFailure.from(FileNotFoundException()))
+    @Test fun securityFailureWithoutPersistedGrantMeansPermissionWasRevoked() {
+        assertEquals(
+            MediaAccessFailure.PERMISSION_REVOKED,
+            MediaAccessFailure.from(SecurityException(), hasPersistedReadGrant = false),
+        )
+    }
+    @Test fun missingSourceIsDistinctFromOtherIoFailures() {
+        assertEquals(MediaAccessFailure.SOURCE_FILE_MISSING, MediaAccessFailure.from(FileNotFoundException()))
         assertEquals(MediaAccessFailure.IO_ERROR, MediaAccessFailure.from(IOException()))
     }
     @Test fun malformedMediaAndUnexpectedErrorsStayDistinct() {
