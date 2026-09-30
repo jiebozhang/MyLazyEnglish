@@ -1,0 +1,10 @@
+{
+  "dataset_version": "bc015ed2e24a7abef49fc6dbbb7fe32c1dadaf8b",
+  "source_sha256": "1a6947e04785db63613a92e14903cdae7954f7e84860b10e68e5c7cbb3f9c3cf",
+  "database_sha256": "3f9a0542ec1375d64b8d5068014be62ec1b9589191fdee81d4a0cbec1232e6b4",
+  "package_sha256": "f84cc9e1672af873772c35892d78e981b5dd194cf9ffaa914b532b9818eda591",
+  "entries": 20014,
+  "database_bytes": 4726784,
+  "compressed_bytes": 2156351,
+  "license_notice": "ECDICT-NOTICE.txt"
+}

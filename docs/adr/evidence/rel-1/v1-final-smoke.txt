@@ -1,0 +1,26 @@
+REL-1 V1.0 household release evidence, 2026-09-30
+Baseline: 521c58d
+Version: 1.0.0 / code 2
+APK bytes: 5309659
+SHA256: 069890ea4743c85c9c220d5a47b4fd20d01d95f9d4d11ae7612c1f747a17918d
+assembleRelease + testDebugUnitTest + lintDebug: BUILD SUCCESSFUL (1m41s)
+assembleDebug + core:common:test + core:model:test: BUILD SUCCESSFUL (44s)
+Combined retained Debug/JVM XML reports: 55 suites, 247 tests, failures=0, errors=0.
+Optional app:testReleaseUnitTest: unavailable task, not a test pass.
+apksigner default: Verifies, v2=true, v3=true
+apksigner --min-sdk-version 23: Verifies, v1=true, v2=true, v3=true
+aapt2: versionName=1.0.0, versionCode=2, minSdk=26, targetSdk=36
+Release manifest: usesCleartextTraffic=false, not debuggable
+Keystore Git history: empty
+adb install -r: Success
+Installed package dumpsys: versionCode=2, versionName=1.0.0, no DEBUGGABLE flag.
+AppOps 10021: allow
+am start -W: Status ok, LaunchState COLD, TotalTime 158, WaitTime 162
+Observed offline: saved home/profile, actual video/transcript, landscape overlay,
+  local lookup and AI fallback, existing vocabulary, authenticated parent dashboard.
+Parent return and re-entry: empty PIN gate required again.
+No app data clear, uninstall, backup deletion, or test household record deletion.
+Network restored: airplane=0, wifi=1, mobile_data=0; auto-rotation=1.
+Current process logcat sample: 2129 lines; tested crash signatures=0;
+  credential-pattern matches=0. Not a whole-storage secret-scan proof.
+Private screenshots retained locally only; not committed.

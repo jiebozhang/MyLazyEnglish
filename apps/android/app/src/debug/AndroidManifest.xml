@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:usesCleartextTraffic="${lazyengAllowInsecureLocalAiEndpoints}"
+        tools:replace="android:usesCleartextTraffic">
+        <activity
+            android:name=".PhysicalRotationHostActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden"
+            android:exported="true"
+            android:screenOrientation="unspecified" />
+    </application>
+</manifest>

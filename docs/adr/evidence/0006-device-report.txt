@@ -1,0 +1,33 @@
+SESSION pid=8344
+PERSISTED_URI_PERMISSION
+Persisted read grant: true
+URI accessible without recopy: true
+durationMs=5016, resolution=320x240, containerMime=video/mp4, videoCodec=video/avc, rotation=0
+PLAYER_STATE=BUFFERING; playing=false
+FIRST_FRAME_RENDERED positionMs=0
+PLAYER_STATE=READY; playing=false
+IS_PLAYING=true; positionMs=0
+IS_PLAYING=false; positionMs=823
+PAUSE_OBSERVED beforeMs=823; afterMs=826; playing=false
+SEEK_OBSERVED fromMs=826; toMs=2000
+PLAYER_STATE=BUFFERING; playing=false
+FIRST_FRAME_RENDERED positionMs=2000
+PLAYER_STATE=READY; playing=false
+IS_PLAYING=true; positionMs=2000
+IS_PLAYING=false; positionMs=2684
+PAUSE_OBSERVED beforeMs=2684; afterMs=2688; playing=false
+SESSION pid=8918
+RESTORED_AFTER_PROCESS_RESTART
+Persisted read grant: true
+URI accessible without recopy: true
+durationMs=5016, resolution=320x240, containerMime=video/mp4, videoCodec=video/avc, rotation=0
+PLAYER_STATE=BUFFERING; playing=false
+PLAYBACK_REQUESTED
+FIRST_FRAME_RENDERED positionMs=0
+PLAYER_STATE=READY; playing=true
+IS_PLAYING=true; positionMs=0
+PLAYER_STATE=ENDED; playing=false
+IS_PLAYING=false; positionMs=5004
+SESSION pid=9139
+PERMISSION_REVOKED: select an accessible video again
+PERMISSION_REVOKED: select an accessible video again

@@ -1,0 +1,37 @@
+REL-1 Xiaomi 15 Ultra installation record
+Date: 2026-09-29
+Device model: 25019PNF3C
+Package: com.lazyeng.family
+APK: app-release.apk (locally signed)
+
+Manual install:
+  adb install -r app-release.apk
+  Performing Streamed Install
+  Success
+
+MIUI AppOps:
+  adb shell appops set com.lazyeng.family 10021 allow
+  adb shell appops set com.lazyeng.family 10008 allow
+
+Cold launch:
+  adb shell am start -W -n com.lazyeng.family/.MainActivity
+  Status: ok
+  LaunchState: COLD
+  Activity: com.lazyeng.family/.MainActivity
+  TotalTime: 179 ms
+  Focus: com.lazyeng.family/com.lazyeng.family.MainActivity
+  Keyguard locked: false
+
+First-run UI hierarchy confirmed onboarding step 1 (family/PIN creation).
+The device owner completed PIN and child-profile setup on-device. A later
+sanitized hierarchy check found the four child tabs, parent entry, and
+"no videos" empty state. No PIN or child name is included in this record.
+Screenshot capture is blocked by the app's FLAG_SECURE window policy; no
+black screenshot was retained as visual proof.
+
+Release DEX string-table scan:
+  2580: absent
+  sk-demo-family-key: absent
+  test-only-fake-key: absent
+  fake connection-success text: absent
+  Release BuildConfig: DEBUG=false, ALLOW_INSECURE_LOCAL_AI_ENDPOINTS=false

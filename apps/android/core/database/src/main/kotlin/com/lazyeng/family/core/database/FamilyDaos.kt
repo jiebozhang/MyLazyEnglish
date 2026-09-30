@@ -1,0 +1,62 @@
+package com.lazyeng.family.core.database
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import java.time.Instant
+
+@Dao
+internal interface FamilyDao {
+    @Query("SELECT * FROM families WHERE id = :familyId")
+    suspend fun get(familyId: String): FamilyEntity?
+
+    @Insert suspend fun insert(family: FamilyEntity)
+    @Update suspend fun update(family: FamilyEntity)
+}
+
+@Dao
+internal interface ProfileDao {
+    @Query("SELECT id, nickname, avatar_id, role, english_level FROM profiles WHERE family_id = :familyId AND deleted_at IS NULL ORDER BY created_at, id")
+    suspend fun choices(familyId: String): List<ProfileChoiceRow>
+    @Query("SELECT * FROM profiles WHERE family_id = :familyId AND id = :profileId AND deleted_at IS NULL")
+    suspend fun getActive(familyId: String, profileId: String): ProfileEntity?
+
+    /** Internal scoped tombstone read for mutation guards and audit tests. */
+    @Query("SELECT * FROM profiles WHERE family_id = :familyId AND id = :profileId")
+    suspend fun getRecord(familyId: String, profileId: String): ProfileEntity?
+
+    @Insert suspend fun insert(profile: ProfileEntity)
+
+    @Query("""
+        UPDATE profiles SET nickname = :nickname, avatar_id = :avatarId, role = :role,
+            age_mode = :ageMode, english_level = :englishLevel, ui_preferences = :preferences
+        WHERE family_id = :familyId AND id = :profileId AND deleted_at IS NULL
+    """)
+    suspend fun updateDetails(
+        familyId: String, profileId: String, nickname: String, avatarId: String?,
+        role: String, ageMode: String, englishLevel: String, preferences: Map<String, String>,
+    )
+
+    @Query("""
+        UPDATE profiles SET deleted_at = :deletedAt
+        WHERE family_id = :familyId AND id = :profileId AND deleted_at IS NULL
+    """)
+    suspend fun markDeleted(familyId: String, profileId: String, deletedAt: Instant)
+
+    @Query("DELETE FROM profiles WHERE family_id = :familyId AND id = :profileId AND deleted_at IS NULL")
+    suspend fun deletePermanently(familyId: String, profileId: String): Int
+}
+
+@Dao
+internal interface LegacyMigrationDao {
+    @Query("SELECT EXISTS(SELECT 1 FROM legacy_migration_markers WHERE id = :id)")
+    suspend fun isComplete(id: String): Boolean
+
+    @Insert
+    suspend fun markComplete(marker: LegacyMigrationMarkerEntity)
+}
+
+internal data class ProfileChoiceRow(
+    val id: String, val nickname: String, val avatar_id: String?, val role: String, val english_level: String,
+)

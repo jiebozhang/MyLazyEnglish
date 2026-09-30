@@ -15,7 +15,7 @@ export function AiSettingsForm() {
   const [provider, setProvider] = useState<"openai" | "anthropic">("openai");
   const [showKey, setShowKey] = useState(false);
   const [testing, setTesting] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { apiBase: "https://api.example.com/v1", model: "family-tutor-mini", apiKey: "sk-demo-family-key" } });
+  const { register, handleSubmit, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { apiBase: "https://api.example.com/v1", model: "family-tutor-mini", apiKey: "" } });
   const test = handleSubmit(() => { setTesting(true); setTimeout(() => { setTesting(false); toast.success("连接成功 · 186ms", { description: "模型已准备好提供儿童语境解释" }); }, 650); });
   return <div className="space-y-4 rounded-[24px] border border-[color:var(--border)] bg-white p-4 shadow-[0_2px_12px_rgba(45,59,54,.05)]">
     <div className="flex items-center gap-3"><div className="flex size-11 items-center justify-center rounded-2xl bg-[color:var(--blue-soft)] text-[color:var(--blue-deep)]"><PlugZap className="size-5" /></div><div><h2 className="font-bold">大模型设置</h2><p className="text-xs text-[color:var(--muted-foreground)]">只用于增强语境解释</p></div></div>

@@ -1,0 +1,47 @@
+日期：2026-09-30
+基线：3b716ea
+分支：codex/rename-app-jingjing-owl
+
+改动仅限用户可见名称：
+- app/src/main/res/values/strings.xml：app_name → 菁仔的猫头鹰。
+- feature/onboarding/.../OnboardingScreen.kt：首屏标题 → 菁仔的猫头鹰。
+- feature/profiles/.../ProfilesScreen.kt：档案页面标题 → 菁仔的猫头鹰。
+- app/src/androidTest/.../OnboardingScreenTest.kt：现有首屏/大字体测试新增标题显示断言。
+没有 values-* 本地化变体。未添加英文副标题。
+frontend/index.html 原有 title 是 Genie APP；LazyEng 只出现在 mock.ts 注释，未改动。
+applicationId、包名、模块、工程文档、类/变量、图标均未修改。
+
+构建环境：已有 Temurin 17.0.20.1+1、<android-sdk>。
+复用上次的临时本地 Maven 缓存 init script，以 offline 模式构建。
+未修改项目依赖版本、仓库配置、Lint 配置。
+:app:assembleDebug、:app:assembleDebugAndroidTest、:app:lintDebug 通过。
+全部 app/core/feature 单元测试任务通过：247 tests、0 failures、0 errors、0 skipped。
+JVM 模块使用 :test，Android 模块使用 :testDebugUnitTest。
+首次根级 testDebugUnitTest 包含历史 spikes，因旧依赖未缓存失败；
+最终显式执行正式应用及 core/feature 全部模块测试，未更改 spikes。
+Lint：0 errors、26 warnings；与图标任务的已知警告数相同。
+最终构建原始日志：build-checks-final.log。
+
+小米 15 Ultra：25019PNF3C，serial <device-serial>。
+主包与测试包使用现有家庭密钥重签，再手动 adb install -r：均 Success。
+未卸载、未 pm clear，不删除家庭数据。密码仅从环境读取。
+安装后对 com.lazyeng.family 与 com.lazyeng.family.test 分别执行：
+  adb -s <device-serial> shell cmd appops set <package> 10021 allow
+  adb -s <device-serial> shell cmd appops set <package> 10008 allow
+  adb -s <device-serial> shell am start -W -n com.lazyeng.family/.MainActivity
+启动 Status: ok，COLD，TotalTime 467ms，WaitTime 469ms。
+随后直接执行：
+  adb -s <device-serial> shell am instrument -w -r -e class com.lazyeng.family.OnboardingScreenTest com.lazyeng.family.test/androidx.test.runner.AndroidJUnitRunner
+结果：OK (5 tests)。未使用 connectedDebugAndroidTest。
+AppOps 主包复查：10021 allow、10008 allow。
+
+截图均已查看：
+- launcher.png：真实 MIUI 桌面图标下方完整显示菁仔的猫头鹰，原猫头鹰图标保留。
+- recents.png：真实最近任务卡片名称为菁仔的猫头鹰。
+- onboarding-font-1.3.png：真机 Compose 测试渲染实际 OnboardingScreen SET_PIN，
+  1.3 倍字体下标题完整显示；模拟空 PIN 状态，未重置实际家庭配置。
+
+全局复查：用户可见 XML 字符串与 Kotlin 字符串均无 LazyEng 文案残留。
+仅保留 Application 类名及两条 @Preview 的 IDE 预览名称，均非用户界面文案。
+没有归属不明确、需要用户决定的残留项。
+设备当前是与家庭发布密钥同签名的 Debug 验收包，不是新的正式 Release。

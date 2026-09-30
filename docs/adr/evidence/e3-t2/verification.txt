@@ -1,0 +1,22 @@
+E3-T2 verification (JDK 17, cached dependencies)
+
+Command:
+./gradlew :app:assembleDebug :core:model:test :core:common:test :core:testing:test testDebugUnitTest lintDebug --offline --console=plain
+
+BUILD SUCCESSFUL in 26s
+851 actionable tasks: 174 executed, 677 up-to-date
+
+JUnit XML totals from build/test-results/test and build/test-results/testDebugUnitTest:
+tests=116 failures=0 errors=0 skipped=0
+
+New suites:
+com.lazyeng.family.core.common.subtitle.TimelineValidatorTest: tests=7 failures=0 errors=0
+com.lazyeng.family.core.common.subtitle.SubtitleTokenizerTest: tests=6 failures=0 errors=0
+com.lazyeng.family.core.database.SubtitlePublishTest: tests=9 failures=0 errors=0
+
+core/database/build/reports/lint-results-debug.txt:
+No issues found.
+
+Exported Room schemas unchanged (versions 1, 2, 3).
+No E3-T2 device instrumentation/visual run is claimed.
+Raw local Gradle output: apps/android/app/build/reports/e3-t2-validation.log (ignored).

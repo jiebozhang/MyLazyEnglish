@@ -6,8 +6,20 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+apps/android/app/src/androidTest/assets/ecdictionary.sqlite
+__pycache__/
+*.py[cod]
 
 # Local env / secrets
+ENV_NOTES.local.md
+工作要求.md
+local.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.apk
+*.aab
 .env
 .env.*
 !.env.example
